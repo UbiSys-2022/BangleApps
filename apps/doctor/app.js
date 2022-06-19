@@ -106,6 +106,8 @@ Bangle.on("lcdPower", (isOn) => {
   }
 });
 
+Bangle.setLCDTimeout(30);
+
 if (Bangle.isLCDOn()) {
   startScanning();
 }
