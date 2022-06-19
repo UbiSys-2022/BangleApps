@@ -47,12 +47,12 @@ function renderGraph(l) {
 }
 
 const Layout = require("Layout");
-const INTERVAL = 10e3;
+const INTERVAL = 1e3;
 const LCD_TIMEOUT = 30;
 const NA = "n/a";
 
 let dataHr = new Data(20);
-let deviceCurrent = { id: null };
+let deviceCurrent = {};
 let isLcdForceOn = false;
 let scanIntervalId = -1;
 
@@ -153,16 +153,21 @@ function scanNearbyDevices() {
         {}
       );
       const isSameDevice =
-        deviceCurrent.id !== deviceClosest.id && deviceCurrent.connected;
+        deviceCurrent.id === deviceClosest.id && deviceCurrent.connected;
 
-      if (!isSameDevice) {
-        console.log("new closest device name is", deviceClosest.id);
+      if (!isSameDevice && deviceClosest.id) {
+        console.log(
+          "new closest device name is",
+          deviceClosest.id,
+          ", at",
+          deviceClosest.rssi
+        );
         Bangle.emit("closestdevicechanged", deviceClosest);
       } else {
-        console.log("closest device is the same");
+        console.log("closest device is the same, at", deviceClosest.rssi);
       }
     },
-    { filters: [{ services: ["180d"] }] }
+    { filters: [{ services: ["180d"] }], timeout: INTERVAL }
   );
 }
 
@@ -175,7 +180,7 @@ function startScanning() {
 }
 
 Bangle.on("closestdevicechanged", (device) => {
-  deviceCurrent = device;
+  deviceCurrent = device || {};
   disconnect(deviceCurrent).then(connect(device));
 });
 
