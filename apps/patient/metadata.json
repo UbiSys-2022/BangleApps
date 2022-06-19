@@ -1,0 +1,14 @@
+{
+  "id": "patient",
+  "name": "Patient's app",
+  "shortName": "Patietn app",
+  "icon": "app.png",
+  "description": "Patient's app that monitors data and transmitsit to Doctor's app",
+  "tags": "bluetooth",
+  "storage": [
+    { "name": "patient.app.js", "url": "app.js" },
+    { "name": "patient.img", "url": "app-icon.js", "evaluate": true }
+  ],
+  "supports": ["BANGLEJS"],
+  "version": "0.01"
+}
