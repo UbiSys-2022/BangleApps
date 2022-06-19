@@ -59,6 +59,7 @@ let scanIntervalId = -1;
 const layout = new Layout({
   type: "v",
   c: [
+    { type: "txt", font: "6x8", label: "", id: "lcd" },
     { type: "txt", font: "20%", label: "0", id: "heartrate" },
     { type: "txt", font: "6x8", label: NA, id: "name" },
     {
@@ -103,7 +104,7 @@ function connect(device) {
           const hr = e.target.value.getUint8(1);
 
           dataHr.push(hr);
-          drawData({ data: dataHr, name: deviceCurrent.name });
+          drawData();
         });
 
         return char.startNotifications();
@@ -121,9 +122,10 @@ function disconnect(device) {
   }
 }
 
-function drawData(args) {
-  layout.heartrate.label = args.data.last;
-  layout.name.label = args.name || NA;
+function drawData() {
+  layout.lcd.label = isLcdForceOn ? "lcd on" : "lcd auto";
+  layout.heartrate.label = dataHr.last;
+  layout.name.label = deviceCurrent.name || NA;
   g.clear();
   layout.render();
 }
