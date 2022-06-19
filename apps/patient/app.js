@@ -110,7 +110,7 @@ function notifyHRM(heartrate) {
     0x180d: {
       0x2a37: {
         notify: true,
-        value: [0x00, heartrate],
+        value: [0x06, heartrate],
       },
     },
   });
