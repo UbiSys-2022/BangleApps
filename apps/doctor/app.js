@@ -1,10 +1,68 @@
+class Data {
+  constructor(len) {
+    this.hr = new Array(20);
+    this.reset();
+  }
+  get last() {
+    return this.hr[this.idx];
+  }
+  get length() {
+    return this.hr.length;
+  }
+  get max() {
+    return Math.max.apply(
+      null,
+      this.hr.filter((x) => x > 0)
+    );
+  }
+  get min() {
+    return Math.min.apply(
+      null,
+      this.hr.filter((x) => x > 0)
+    );
+  }
+  push(value) {
+    this.idx = (this.idx + 1) % this.hr.length;
+    this.hr[this.idx] = value;
+  }
+  reset() {
+    this.hr.fill(0);
+    this.idx = 0;
+  }
+  get values() {
+    return this.hr;
+  }
+}
+
+function renderGraph(l) {
+  require("graph").drawLine(g, l.data.values, {
+    gridx: Math.floor(l.w / l.data.length),
+    height: l.h,
+    maxy: l.data.max,
+    miny: l.data.min,
+    width: l.w,
+    x: l.x,
+    y: l.y,
+  });
+}
+
 const Layout = require("Layout");
 const NA = "n/a";
+let dataHr = new Data(20);
 const layout = new Layout({
   type: "v",
   c: [
     { type: "txt", font: "20%", label: "0", id: "heartrate" },
     { type: "txt", font: "6x8", label: NA, id: "name" },
+    {
+      type: "custom",
+      render: renderGraph,
+      id: "graph",
+      bgCol: g.theme.bg,
+      fillx: 1,
+      filly: 1,
+      data: dataHr,
+    },
   ],
 });
 const INTERVAL = 10e3;
@@ -14,6 +72,7 @@ let scanIntervalId;
 function connect(device) {
   return () => {
     console.log("new closest device", device.id);
+    dataHr.reset();
 
     return device.gatt
       .connect()
@@ -39,7 +98,8 @@ function connect(device) {
         char.on("characteristicvaluechanged", (e) => {
           const hr = e.target.value.getUint8(1);
 
-          drawData({ name: deviceCurrent.name, heartrate: hr });
+          dataHr.push(hr);
+          drawData({ data: dataHr, name: deviceCurrent.name });
         });
 
         return char.startNotifications();
@@ -58,7 +118,7 @@ function disconnect(device) {
 }
 
 function drawData(args) {
-  layout.heartrate.label = args.heartrate;
+  layout.heartrate.label = args.data.last;
   layout.name.label = args.name || NA;
   g.clear();
   layout.render();
