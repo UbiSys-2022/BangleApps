@@ -10,5 +10,5 @@
     { "name": "patient.img", "url": "app-icon.js", "evaluate": true }
   ],
   "supports": ["BANGLEJS"],
-  "version": "0.02"
+  "version": "0.03"
 }

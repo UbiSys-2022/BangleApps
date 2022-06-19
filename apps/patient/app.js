@@ -65,10 +65,10 @@ function drawHRM() {
   // console.log(heartRate);
   /* Tachycardia
   Heart rate excees normal resting rate */
-  while (heartRate > 120) g.drawString("Pulse too high!", 120, 200, true);
+  if (heartRate > 120) g.drawString("Pulse too high!", 120, 200, true);
   /* Bradycardia
   Slow, resting heart rate and commonly normal during sleep, or for resting athletes. More tricky do detect, because if loop checks for pulse under 60, every sleeping person might trigger an alarm. For testing check for values lower than 40. */
-  while (heartRate < 40) g.drawstring("Pulse too low!", 120, 200, true);
+  if (heartRate < 40) g.drawstring("Pulse too low!", 120, 200, true);
 }
 
 function fileWrite(bpm) {
