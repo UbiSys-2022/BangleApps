@@ -9,7 +9,7 @@ const layout = new Layout({
 });
 const INTERVAL = 10e3;
 let deviceCurrent = { id: null };
-let scanIntervalId = -1;
+let scanIntervalId;
 
 function connect(device) {
   return () => {
@@ -102,7 +102,7 @@ Bangle.on("lcdPower", (isOn) => {
   } else {
     disconnect(deviceCurrent);
     clearInterval(scanIntervalId);
-    scanIntervalId = -1;
+    scanIntervalId = undefined;
   }
 });
 
