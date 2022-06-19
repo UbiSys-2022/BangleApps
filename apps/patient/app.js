@@ -119,11 +119,11 @@ function notifyHRM(heartrate) {
 // show the information on clock & BPM
 drawTimeDate();
 drawHRM();
-fileWrite(currentBPM);
+//fileWrite(currentBPM);
 
 var secondInterval = setInterval(() => {
   drawTimeDate();
-  fileWrite(currentBPM);
+  // fileWrite(currentBPM);
 }, 1000);
 
 // Stop updates when LCD is off, restart when on
@@ -137,7 +137,7 @@ Bangle.on("lcdPower", (on) => {
     g.clear();
     drawHRM();
     drawTimeDate();
-    fileWrite(currentBPM);
+    // fileWrite(currentBPM);
   } else {
     //Screen off
     clearInterval(secondInterval);
