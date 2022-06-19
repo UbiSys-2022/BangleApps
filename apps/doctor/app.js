@@ -150,7 +150,7 @@ function scanNearbyDevices() {
     (deviceList) => {
       const deviceClosest = deviceList.reduce(
         (closest, device) => (closest.rssi > device.rssi ? closest : device),
-        {}
+        { rssi: -Infinity }
       );
       const isSameDevice =
         deviceCurrent.id === deviceClosest.id && deviceCurrent.connected;
