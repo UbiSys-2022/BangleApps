@@ -47,10 +47,13 @@ function renderGraph(l) {
 }
 
 const Layout = require("Layout");
-const NA = "n/a";
 const INTERVAL = 10e3;
+const LCD_TIMEOUT = 30;
+const NA = "n/a";
+
 let dataHr = new Data(20);
 let deviceCurrent = { id: null };
+let isLcdForceOn = false;
 let scanIntervalId = -1;
 
 const layout = new Layout({
@@ -125,6 +128,20 @@ function drawData(args) {
   layout.render();
 }
 
+function forceLcdOn(e) {
+  isLcdForceOn = !isLcdForceOn;
+
+  console.log("force LCD on:", isLcdForceOn);
+  drawData();
+
+  if (isLcdForceOn) {
+    Bangle.setLCDPower(1);
+    Bangle.setLCDTimeout(0);
+  } else {
+    Bangle.setLCDTimeout(LCD_TIMEOUT);
+  }
+}
+
 function scanNearbyDevices() {
   NRF.findDevices(
     (deviceList) => {
@@ -168,8 +185,10 @@ Bangle.on("lcdPower", (isOn) => {
   }
 });
 
-Bangle.setLCDTimeout(30);
+Bangle.setLCDTimeout(LCD_TIMEOUT);
 
 if (Bangle.isLCDOn()) {
   startScanning();
 }
+
+setWatch(forceLcdOn, BTN2, { repeat: true });
