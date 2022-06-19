@@ -92,6 +92,30 @@ function fileWrite(bpm) {
 
 g.clear(); /*clear bg at start*/
 
+// set up a Hear Rate Profile
+NRF.setServices(
+  {
+    0x180d: {
+      0x2a37: {
+        notify: true,
+        value: [0x00, 0],
+      },
+    },
+  },
+  { advertise: ["180D"] }
+);
+
+function notifyHRM(heartrate) {
+  NRF.updateServices({
+    0x180d: {
+      0x2a37: {
+        notify: true,
+        value: [0x00, heartrate],
+      },
+    },
+  });
+}
+
 // show the information on clock & BPM
 drawTimeDate();
 drawHRM();
@@ -124,4 +148,5 @@ Bangle.on("lcdPower", (on) => {
 Bangle.on("HRM", function (hrm) {
   currentBPM = hrm.bpm;
   drawHRM();
+  notifyHRM(hrm.bpm);
 });
