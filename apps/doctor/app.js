@@ -59,14 +59,15 @@ let scanIntervalId = -1;
 const layout = new Layout({
   type: "v",
   c: [
-    { type: "txt", font: "6x8", label: "", id: "lcd" },
+    { type: "txt", font: "6x8", label: "", col: "#7beeff", id: "lcd" },
     { type: "txt", font: "20%", label: "0", id: "heartrate" },
-    { type: "txt", font: "6x8", label: NA, id: "name" },
+    { type: "txt", font: "6x8", label: NA, col: "#00000f", id: "name" },
     {
       type: "custom",
       render: renderGraph,
       id: "graph",
       bgCol: g.theme.bg,
+      col: "#ff0808",
       fillx: 1,
       filly: 1,
       data: dataHr,
