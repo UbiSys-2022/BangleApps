@@ -1,9 +1,10 @@
 const Layout = require("Layout");
+const NA = "n/a";
 const layout = new Layout({
   type: "v",
   c: [
     { type: "txt", font: "20%", label: "0", id: "heartrate" },
-    { type: "txt", font: "6x8", label: "n/a", id: "name" },
+    { type: "txt", font: "6x8", label: NA, id: "name" },
   ],
 });
 const INTERVAL = 10e3;
@@ -58,7 +59,7 @@ function disconnect(device) {
 
 function drawData(args) {
   layout.heartrate.label = args.heartrate;
-  layout.name.label = args.name;
+  layout.name.label = args.name || NA;
   g.clear();
   layout.render();
 }
