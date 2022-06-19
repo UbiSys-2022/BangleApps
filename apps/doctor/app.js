@@ -69,11 +69,13 @@ function scanNearbyDevices() {
         (closest, device) => (closest.rssi > device.rssi ? closest : device),
         {}
       );
+      const isSameDevice = deviceCurrent.id !== deviceClosest.id;
 
-      console.log("closest device name is", deviceClosest.id);
-
-      if (deviceCurrent.id !== deviceClosest.id) {
+      if (isSameDevice) {
+        console.log("new closest device name is", deviceClosest.id);
         Bangle.emit("closestdevicechanged", deviceClosest);
+      } else {
+        console.log("closes device is the same");
       }
     },
     { filters: [{ services: ["180d"] }] }
