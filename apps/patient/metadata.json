@@ -1,7 +1,7 @@
 {
   "id": "patient",
   "name": "Patient's app",
-  "shortName": "Patietn app",
+  "shortName": "Patient app",
   "icon": "app.png",
   "description": "Patient's app that monitors data and transmitsit to Doctor's app",
   "tags": "bluetooth",
