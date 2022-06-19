@@ -8,6 +8,7 @@ const layout = new Layout({
 });
 const INTERVAL = 10e3;
 let deviceCurrent = { id: null };
+let scanIntervalId = -1;
 
 function connect(device) {
   return () => {
@@ -82,12 +83,28 @@ function scanNearbyDevices() {
   );
 }
 
+function startScanning() {
+  scanIntervalId = setInterval(scanNearbyDevices, INTERVAL);
+  g.clear();
+  E.showMessage("Scanning...");
+  scanNearbyDevices();
+}
+
 Bangle.on("closestdevicechanged", (device) => {
   deviceCurrent = device;
   disconnect(deviceCurrent).then(connect(device));
 });
 
-setInterval(scanNearbyDevices, INTERVAL);
-scanNearbyDevices();
-g.clear();
+Bangle.on("lcdPower", (isOn) => {
+  if (isOn) {
+    startScanning();
+  } else {
+    disconnect(deviceCurrent);
+    clearInterval(scanIntervalId);
+    scanIntervalId = -1;
+  }
+});
 
+if (Bangle.isLCDOn()) {
+  startScanning();
+}
