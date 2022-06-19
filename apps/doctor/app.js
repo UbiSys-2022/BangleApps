@@ -47,7 +47,7 @@ function renderGraph(l) {
 }
 
 const Layout = require("Layout");
-const INTERVAL = 1e3;
+const INTERVAL = 5e3;
 const LCD_TIMEOUT = 30;
 const NA = "n/a";
 
