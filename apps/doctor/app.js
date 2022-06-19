@@ -48,7 +48,11 @@ function renderGraph(l) {
 
 const Layout = require("Layout");
 const NA = "n/a";
+const INTERVAL = 10e3;
 let dataHr = new Data(20);
+let deviceCurrent = { id: null };
+let scanIntervalId = -1;
+
 const layout = new Layout({
   type: "v",
   c: [
@@ -65,9 +69,6 @@ const layout = new Layout({
     },
   ],
 });
-const INTERVAL = 10e3;
-let deviceCurrent = { id: null };
-let scanIntervalId;
 
 function connect(device) {
   return () => {
@@ -145,6 +146,7 @@ function scanNearbyDevices() {
 }
 
 function startScanning() {
+  clearInterval(scanIntervalId);
   scanIntervalId = setInterval(scanNearbyDevices, INTERVAL);
   g.clear();
   E.showMessage("Scanning...");
@@ -162,7 +164,7 @@ Bangle.on("lcdPower", (isOn) => {
   } else {
     disconnect(deviceCurrent);
     clearInterval(scanIntervalId);
-    scanIntervalId = undefined;
+    scanIntervalId = -1;
   }
 });
 
