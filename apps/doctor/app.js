@@ -50,6 +50,7 @@ const Layout = require("Layout");
 const INTERVAL = 3e3;
 const LCD_TIMEOUT = 30;
 const NA = "n/a";
+const RSSI_MARGIN = 6;
 
 let dataHr = new Data(20);
 let deviceCurrent = {};
@@ -148,14 +149,23 @@ function forceLcdOn(e) {
 function scanNearbyDevices() {
   NRF.findDevices(
     (deviceList) => {
-      const deviceClosest = deviceList.reduce(
-        (closest, device) => (closest.rssi > device.rssi ? closest : device),
-        { rssi: -Infinity }
-      );
-      const isSameDevice =
-        deviceCurrent.id === deviceClosest.id && deviceCurrent.connected;
+      let deviceClosest = { rssi: -Infinity };
+      let currentRssi = -Infinity;
 
-      if (!isSameDevice && deviceClosest.id) {
+      for (const device of deviceList) {
+        if (device.rssi > deviceClosest.rssi) {
+          deviceClosest = device;
+        }
+        if (device.id === deviceCurrent.id) {
+          currentRssi = device.rssi;
+        }
+      }
+
+      const isExistent = Boolean(deviceClosest.id);
+      const isCloser = deviceClosest.rssi + RSSI_MARGIN > currentRssi;
+      const isSameDevice = deviceCurrent.id === deviceClosest.id;
+
+      if (isExistent && isCloser && !isSameDevice) {
         console.log(
           "new closest device name is",
           deviceClosest.id,
