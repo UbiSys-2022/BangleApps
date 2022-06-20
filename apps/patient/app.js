@@ -95,22 +95,22 @@ g.clear(); /*clear bg at start*/
 // set up a Hear Rate Profile
 NRF.setServices(
   {
-    0x180d: {
-      0x2a37: {
+    "180d": {
+      "2a37": {
         notify: true,
-        value: [0x00, 0],
+        value: [0x00, 255],
       },
     },
   },
-  { advertise: ["180D"] }
+  { advertise: ["180d"] }
 );
 
 function notifyHRM(heartrate) {
   NRF.updateServices({
-    0x180d: {
-      0x2a37: {
+    "180d": {
+      "2a37": {
         notify: true,
-        value: [0x06, heartrate],
+        value: [0x00, heartrate],
       },
     },
   });
