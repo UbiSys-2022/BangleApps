@@ -47,7 +47,7 @@ function renderGraph(l) {
 }
 
 const Layout = require("Layout");
-const INTERVAL = 5e3;
+const INTERVAL = 3e3;
 const LCD_TIMEOUT = 30;
 const NA = "n/a";
 
@@ -167,7 +167,7 @@ function scanNearbyDevices() {
         console.log("closest device is the same, at", deviceClosest.rssi);
       }
     },
-    { filters: [{ services: ["180d"] }], timeout: INTERVAL }
+    { filters: [{ services: ["180d"] }] /* , timeout: INTERVAL */ } // timeout seems to break scanning
   );
 }
 
