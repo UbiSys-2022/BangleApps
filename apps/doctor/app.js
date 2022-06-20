@@ -62,7 +62,7 @@ const layout = new Layout({
   c: [
     { type: "txt", font: "6x8", label: "", col: "#7beeff", id: "lcd" },
     { type: "txt", font: "20%", label: "0", id: "heartrate" },
-    { type: "txt", font: "6x8", label: NA, col: "#00000f", id: "name" },
+    { type: "txt", font: "6x8", label: NA, col: "#00afff", id: "name" },
     {
       type: "custom",
       render: renderGraph,
