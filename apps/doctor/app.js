@@ -57,24 +57,53 @@ let deviceCurrent = {};
 let isLcdForceOn = false;
 let scanIntervalId = -1;
 
-const layout = new Layout({
-  type: "v",
-  c: [
-    { type: "txt", font: "6x8", label: "", col: "#7beeff", id: "lcd" },
-    { type: "txt", font: "20%", label: "0", id: "heartrate" },
-    { type: "txt", font: "6x8", label: NA, col: "#00afff", id: "name" },
-    {
-      type: "custom",
-      render: renderGraph,
-      id: "graph",
-      bgCol: g.theme.bg,
-      col: "#ff0808",
-      fillx: 1,
-      filly: 1,
-      data: dataHr,
-    },
-  ],
-});
+function forceLcdOn(l) {
+  isLcdForceOn = !isLcdForceOn;
+
+  console.log("force LCD on:", isLcdForceOn);
+
+  if (isLcdForceOn) {
+    Bangle.setLCDPower(1);
+    Bangle.setLCDTimeout(0);
+    layout.b[0].col = "#77ff77";
+  } else {
+    Bangle.setLCDTimeout(LCD_TIMEOUT);
+    layout.b[0].col = "#777777";
+  }
+
+  layout.render();
+}
+
+const layout = new Layout(
+  {
+    type: "v",
+    c: [
+      { type: "txt", font: "20%", label: "0", id: "heartrate" },
+      { type: "txt", font: "6x8", label: NA, col: "#00afff", id: "name" },
+      {
+        type: "custom",
+        render: renderGraph,
+        id: "graph",
+        bgCol: g.theme.bg,
+        col: "#ff0808",
+        fillx: 1,
+        filly: 1,
+        data: dataHr,
+      },
+    ],
+  },
+  {
+    btns: [
+      { type: "btn", label: "lcd", col: "#777777", cb: forceLcdOn },
+      {
+        type: "btn",
+        label: "stats",
+        col: "#aaaaaa",
+        cb: requestStatsFromCurrent,
+      },
+    ],
+  }
+);
 
 function connect(device) {
   return () => {
@@ -125,25 +154,10 @@ function disconnect(device) {
 }
 
 function drawData() {
-  layout.lcd.label = isLcdForceOn ? "lcd on" : "lcd auto";
   layout.heartrate.label = dataHr.last;
   layout.name.label = deviceCurrent.name || NA;
   g.clear();
   layout.render();
-}
-
-function forceLcdOn(e) {
-  isLcdForceOn = !isLcdForceOn;
-
-  console.log("force LCD on:", isLcdForceOn);
-  drawData();
-
-  if (isLcdForceOn) {
-    Bangle.setLCDPower(1);
-    Bangle.setLCDTimeout(0);
-  } else {
-    Bangle.setLCDTimeout(LCD_TIMEOUT);
-  }
 }
 
 function scanNearbyDevices() {
@@ -209,5 +223,3 @@ Bangle.setLCDTimeout(LCD_TIMEOUT);
 if (Bangle.isLCDOn()) {
   startScanning();
 }
-
-setWatch(forceLcdOn, BTN2, { repeat: true });
