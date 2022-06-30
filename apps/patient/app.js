@@ -4,7 +4,10 @@
 //substitute name of patient in filename later!
 var file = require("Storage").open("HR_patient_name.csv", "a");
 
-var currentBPM;
+let averageBPM = 0;
+let currentBPM = 0;
+let minimumBPM = 0;
+let maximumBPM = 0;
 
 // a function to show current time & date
 function drawTimeDate() {
@@ -100,17 +103,29 @@ NRF.setServices(
         notify: true,
         value: [0x00, 255],
       },
+      "2a8d": {
+        readable: true,
+        value: [minimumBPM, averageBPM, maximumBPM],
+      },
     },
   },
   { advertise: ["180d"] }
 );
 
-function notifyHRM(heartrate) {
+function updateData(heartrate) {
+  averageBPM = Math.round((averageBPM + heartrate) / 2);
+  maximumBPM = Math.max(heartrate, maximumBPM);
+  minimumBPM = Math.min(heartrate, minimumBPM);
+
   NRF.updateServices({
     "180d": {
       "2a37": {
         notify: true,
         value: [0x00, heartrate],
+      },
+      "2a8d": {
+        readable: true,
+        value: [minimumBPM, averageBPM, maximumBPM],
       },
     },
   });
@@ -148,5 +163,5 @@ Bangle.on("lcdPower", (on) => {
 Bangle.on("HRM", function (hrm) {
   currentBPM = hrm.bpm;
   drawHRM();
-  notifyHRM(hrm.bpm);
+  updateData(hrm.bpm);
 });
