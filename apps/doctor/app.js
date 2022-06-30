@@ -74,11 +74,39 @@ function forceLcdOn(l) {
   layout.render();
 }
 
+function requestStatsFromCurrent() {
+  console.log("request stats from", deviceCurrent.name);
+
+  if (deviceCurrent.gatt.connected) {
+    console.log("request current device stats");
+
+    deviceCurrent.gatt
+      .getPrimaryService("180d")
+      .then((svc) => {
+        return svc.getCharacteristic("2a8d");
+      })
+      .then((char) => {
+        return char.readValue();
+      })
+      .then((value) => {
+        const min = value.getUint8(1);
+        const avg = value.getUint8(2);
+        const max = value.getUint8(3);
+
+        layout.stats.label = `min ${min}|avg ${avg}|max ${max}`;
+        setTimeout(() => {
+          layout.stats.label = "";
+        }, 1000);
+      });
+  }
+}
+
 const layout = new Layout(
   {
     type: "v",
     c: [
       { type: "txt", font: "20%", label: "0", id: "heartrate" },
+      { type: "txt", font: "6x8", label: "", col: "#07dfae", id: "stats" },
       { type: "txt", font: "6x8", label: NA, col: "#00afff", id: "name" },
       {
         type: "custom",
