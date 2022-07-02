@@ -226,8 +226,7 @@ function scanNearbyDevices() {
 function startScanning() {
   clearInterval(scanIntervalId);
   scanIntervalId = setInterval(scanNearbyDevices, INTERVAL);
-  g.clear();
-  E.showMessage("Scanning...");
+  layout.name.label = "Scanning...";
   scanNearbyDevices();
 }
 
@@ -247,6 +246,7 @@ Bangle.on("lcdPower", (isOn) => {
 });
 
 Bangle.setLCDTimeout(LCD_TIMEOUT);
+g.clear();
 
 if (Bangle.isLCDOn()) {
   startScanning();
