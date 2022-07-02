@@ -195,6 +195,7 @@ function connect(device) {
 
     console.log("new closest device", device.id);
     device.on("gattserverdisconnected", () => {
+      deviceCurrent = {};
       console.log(device.name, "disconnected");
       renderLabel(layout.name);
       dataHr.reset();
@@ -291,7 +292,6 @@ function startScanning() {
 }
 
 Bangle.on("closestdevicechanged", (device) => {
-  deviceCurrent = device || {};
   disconnect(deviceCurrent).then(connect(device));
 });
 
