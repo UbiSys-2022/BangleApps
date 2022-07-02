@@ -49,7 +49,6 @@ function renderGraph(l) {
 const Layout = require("Layout");
 const INTERVAL = 3e3;
 const LCD_TIMEOUT = 30;
-const NA = "n/a";
 const RSSI_MARGIN = 6;
 
 let dataHr = new Data(20);
@@ -71,30 +70,25 @@ function forceLcdOn(l) {
     layout.b[0].col = "#777777";
   }
 
-  layout.render();
+  layout.render(layout.b[0]);
 }
 
 function resetRequest() {
-  layout.clear(layout.min);
-  layout.clear(layout.avg);
-  layout.clear(layout.max);
   layout.b[1].col = "#777777";
-  layout.min.label = "";
-  layout.avg.label = "";
-  layout.max.label = "";
-  layout.update();
-  layout.render();
+  layout.render(layout.b[1]);
+  renderLabel(layout.min);
+  renderLabel(layout.avg);
+  renderLabel(layout.max);
 }
 
 function requestStatsFromCurrent() {
-  console.log("request stats from", deviceCurrent.name);
+  console.log("request current device stats");
 
   if (deviceCurrent.gatt.connected) {
-    console.log("request current device stats");
-    layout.avg.label = "requesting...";
+    console.log("request stats from", deviceCurrent.name);
     layout.b[1].col = "#77ff77";
-    layout.update();
-    layout.render();
+    layout.render(layout.b[1]);
+    renderLabel(layout.avg, "requesting...");
 
     deviceCurrent.gatt
       .getPrimaryService("180d")
@@ -109,12 +103,9 @@ function requestStatsFromCurrent() {
         const avg = value.getUint8(1);
         const max = value.getUint8(2);
 
-        layout.clear(layout.avg);
-        layout.min.label = `min ${min}`;
-        layout.avg.label = `avg ${avg}`;
-        layout.max.label = `max ${max}`;
-        layout.update();
-        layout.render();
+        renderLabel(layout.min, `min ${min}`);
+        renderLabel(layout.avg, `avg ${avg}`);
+        renderLabel(layout.max, `max ${max}`);
         setTimeout(resetRequest, INTERVAL);
       })
       .catch(resetRequest);
@@ -125,16 +116,21 @@ const layout = new Layout(
   {
     type: "v",
     c: [
-      { type: "txt", font: "10%", label: NA, col: "#00afff", id: "name" },
-      { type: "txt", font: "20%", label: "0", id: "heartrate" },
-      { type: "txt", font: "10%", label: "", col: "#07dfae", id: "stats" },
+      {
+        type: "txt",
+        font: "10%",
+        label: "not connected",
+        col: "#00afff",
+        id: "name",
+      },
+      { type: "txt", font: "20%", label: "---", id: "heartrate" },
       {
         type: "h",
         c: [
           {
             type: "txt",
             font: "7%",
-            label: "",
+            label: "min ---",
             col: "#07dfae",
             id: "min",
             pad: 4,
@@ -142,7 +138,7 @@ const layout = new Layout(
           {
             type: "txt",
             font: "7%",
-            label: "",
+            label: "avg ---",
             col: "#07dfae",
             id: "avg",
             pad: 4,
@@ -150,7 +146,7 @@ const layout = new Layout(
           {
             type: "txt",
             font: "7%",
-            label: "",
+            label: "max ---",
             col: "#07dfae",
             id: "max",
             pad: 4,
@@ -182,21 +178,31 @@ const layout = new Layout(
   }
 );
 
+function renderLabel(obj, value) {
+  layout.clear(obj);
+  obj.label = "";
+
+  if (value) {
+    obj.label = value;
+    layout.render(obj);
+  }
+}
+
 function connect(device) {
   return () => {
+    deviceCurrent = device;
+    renderLabel(layout.name, device.name);
+
     console.log("new closest device", device.id);
-    dataHr.reset();
+      dataHr.reset();
 
     return device.gatt
       .connect()
-      .then((g) => {
-        gattCurrent = g;
+      .then((gatt) => {
+        gattCurrent = gatt;
         console.log("device name:", device.name);
-        layout.name.label = device.name;
-        layout.update();
-        layout.render();
 
-        return g.startBonding();
+        return gatt.startBonding();
       })
       .then(() => {
         console.log("acquiring service");
@@ -215,7 +221,8 @@ function connect(device) {
           const hr = e.target.value.getUint8(1);
 
           dataHr.push(hr);
-          drawData();
+          renderLabel(layout.heartrate, dataHr.last);
+          layout.render(layout.graph);
         });
 
         return char.startNotifications();
@@ -225,21 +232,12 @@ function connect(device) {
 }
 
 function disconnect(device) {
-  layout.clear(layout.name);
-
   if (device.connected) {
     console.log("disconnecting the previous device");
     return device.gatt.disconnect();
   } else {
     return Promise.resolve();
   }
-}
-
-function drawData() {
-  layout.clear(layout.heartrate);
-  layout.heartrate.label = dataHr.last;
-  layout.update();
-  layout.render();
 }
 
 function scanNearbyDevices() {
@@ -280,10 +278,8 @@ function scanNearbyDevices() {
 function startScanning() {
   clearInterval(scanIntervalId);
   scanIntervalId = setInterval(scanNearbyDevices, INTERVAL);
-  layout.clear(layout.name);
-  layout.name.label = "Scanning...";
-  layout.update();
-  layout.render();
+  resetRequest();
+  renderLabel(layout.name, "Scanning...");
 
   scanNearbyDevices();
 }
@@ -295,6 +291,7 @@ Bangle.on("closestdevicechanged", (device) => {
 
 Bangle.on("lcdPower", (isOn) => {
   if (isOn) {
+    layout.render();
     startScanning();
   } else {
     disconnect(deviceCurrent);
@@ -305,6 +302,7 @@ Bangle.on("lcdPower", (isOn) => {
 
 Bangle.setLCDTimeout(LCD_TIMEOUT);
 g.clear();
+layout.render();
 
 if (Bangle.isLCDOn()) {
   startScanning();
