@@ -275,7 +275,12 @@ function scanNearbyDevices() {
         );
         Bangle.emit("closestdevicechanged", deviceClosest);
       } else {
-        console.log("closest device is the same, at", deviceClosest.rssi);
+        console.log(
+          "closest device is the same",
+          deviceClosest.name,
+          ", at",
+          deviceClosest.rssi
+        );
       }
     },
     { filters: [{ services: ["180d"] }] /* , timeout: INTERVAL */ } // timeout seems to break scanning
