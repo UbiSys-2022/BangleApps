@@ -1,6 +1,6 @@
 class Data {
   constructor(len) {
-    this.hr = new Array(20);
+    this.hr = new Array(len);
     this.reset();
   }
   get last() {
