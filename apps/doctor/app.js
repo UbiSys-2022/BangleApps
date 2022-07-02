@@ -71,7 +71,6 @@ function forceLcdOn(l) {
     layout.b[0].col = "#777777";
   }
 
-  layout.clear();
   layout.render();
 }
 
