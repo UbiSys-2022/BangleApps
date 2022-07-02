@@ -89,9 +89,9 @@ function requestStatsFromCurrent() {
         return char.readValue();
       })
       .then((value) => {
-        const min = value.getUint8(1);
-        const avg = value.getUint8(2);
-        const max = value.getUint8(3);
+        const min = value.getUint8(0);
+        const avg = value.getUint8(1);
+        const max = value.getUint8(2);
 
         layout.stats.label = `min ${min}|avg ${avg}|max ${max}`;
         setTimeout(() => {
