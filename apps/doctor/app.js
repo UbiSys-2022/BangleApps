@@ -194,7 +194,13 @@ function connect(device) {
     renderLabel(layout.name, device.name);
 
     console.log("new closest device", device.id);
+    device.on("gattserverdisconnected", () => {
+      console.log(device.name, "disconnected");
+      renderLabel(layout.name);
       dataHr.reset();
+      renderLabel(layout.heartrate, dataHr.last);
+      layout.render(layout.graph);
+    });
 
     return device.gatt
       .connect()
