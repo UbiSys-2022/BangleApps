@@ -91,13 +91,9 @@ function fileWrite(bpm) {
   }
 }
 
-/* START APP */
-
-g.clear(); /*clear bg at start*/
-
-// set up a Hear Rate Profile
-NRF.setServices(
-  {
+function initServices() {
+  // set up a Hear Rate Profile
+  NRF.setServices({
     "180d": {
       "2a37": {
         notify: true,
@@ -108,9 +104,21 @@ NRF.setServices(
         value: [minimumBPM, averageBPM, maximumBPM],
       },
     },
-  },
-  { advertise: ["180d"] }
-);
+  });
+
+  // advertise manually, to workaround a quirk in `setSevices()`
+  // https://github.com/espruino/Espruino/issues/1961
+  NRF.setAdvertising(
+    {},
+    { scannable: true, discoverable: true, connectable: true }
+  );
+  let advData = NRF.getAdvertisingData({});
+  let advDataExt = new Uint8Array(advData.length + 4);
+
+  advDataExt.set(advData, 0);
+  advDataExt.set([3, 0x03, 0x0d, 0x18], advData.length);
+  NRF.setAdvertising(advDataExt);
+}
 
 function updateData(heartrate) {
   averageBPM = Math.round((averageBPM + heartrate) / 2);
@@ -130,6 +138,12 @@ function updateData(heartrate) {
     },
   });
 }
+
+/* START APP */
+
+g.clear(); /*clear bg at start*/
+
+initServices();
 
 // show the information on clock & BPM
 drawTimeDate();
