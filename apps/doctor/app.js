@@ -71,6 +71,7 @@ function forceLcdOn(l) {
     layout.b[0].col = "#777777";
   }
 
+  layout.clear();
   layout.render();
 }
 
@@ -184,7 +185,7 @@ function disconnect(device) {
 function drawData() {
   layout.heartrate.label = dataHr.last;
   layout.name.label = deviceCurrent.name || NA;
-  g.clear();
+  layout.clear();
   layout.render();
 }
 
@@ -227,6 +228,9 @@ function startScanning() {
   clearInterval(scanIntervalId);
   scanIntervalId = setInterval(scanNearbyDevices, INTERVAL);
   layout.name.label = "Scanning...";
+  layout.clear();
+  layout.render();
+
   scanNearbyDevices();
 }
 
