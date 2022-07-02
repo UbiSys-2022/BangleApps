@@ -10,5 +10,5 @@
     { "name": "doctor.img", "url": "app-icon.js", "evaluate": true }
   ],
   "supports": ["BANGLEJS"],
-  "version": "0.05"
+  "version": "0.06"
 }
