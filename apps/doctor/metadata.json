@@ -3,7 +3,7 @@
   "name": "Doctor's app",
   "shortName": "Doctor app",
   "icon": "app.png",
-  "description": "Dotctors's app that monitors data transmitted by Patient's app",
+  "description": "Doctors's app that monitors data transmitted by Patient's app",
   "tags": "bluetooth",
   "storage": [
     { "name": "doctor.app.js", "url": "app.js" },
