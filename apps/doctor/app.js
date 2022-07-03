@@ -285,7 +285,8 @@ function scanNearbyDevices() {
 
       const isExistent = Boolean(deviceClosest.id);
       const isCloser = deviceClosest.rssi + RSSI_MARGIN > currentRssi;
-      const isSameDevice = deviceCurrent.id === deviceClosest.id;
+      const isConnected = deviceCurrent.gatt && deviceCurrent.gatt.connected;
+      const isSameDevice = isConnected && deviceCurrent.id === deviceClosest.id;
 
       if (isExistent && isCloser && !isSameDevice) {
         console.log(
