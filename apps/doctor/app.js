@@ -115,6 +115,7 @@ function requestStatsFromCurrent() {
 const layout = new Layout(
   {
     type: "v",
+    bgCol: "#000000",
     c: [
       {
         type: "txt",
@@ -179,8 +180,13 @@ const layout = new Layout(
 );
 
 function renderLabel(obj, value) {
-  layout.clear(obj);
+  let t = obj.col;
+
+  obj.col = layout.l.bgCol;
+  layout.render(obj);
+
   obj.label = "";
+  obj.col = t;
 
   if (value) {
     obj.label = value;
