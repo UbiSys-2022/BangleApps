@@ -245,10 +245,13 @@ function connect(device) {
 }
 
 function disconnect(device) {
-  if (device.connected) {
-    console.log("disconnecting the previous device");
+  console.log("disconnecting the previous device", device.name);
+
+  if (device && device.gatt && device.gatt.connected) {
+    console.log("disconnecting", device.name);
     return device.gatt.disconnect();
   } else {
+    console.log("no connected device");
     return Promise.resolve();
   }
 }
