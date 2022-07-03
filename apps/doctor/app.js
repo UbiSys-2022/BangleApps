@@ -257,7 +257,9 @@ function connect(device) {
 function disconnect(device) {
   console.log("disconnecting the previous device", device.name);
 
-  if (device && device.gatt && device.gatt.connected) {
+  deviceCurrent = {};
+
+  if (device && device.gatt) {
     console.log("disconnecting", device.name);
     return device.gatt.disconnect();
   } else {
