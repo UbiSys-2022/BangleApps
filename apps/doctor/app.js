@@ -203,9 +203,9 @@ function connect(device) {
     device.on("gattserverdisconnected", () => {
       deviceCurrent = {};
       console.log(device.name, "disconnected");
+      renderLabel(layout.heartrate);
       renderLabel(layout.name);
       dataHr.reset();
-      renderLabel(layout.heartrate, dataHr.last);
       layout.render(layout.graph);
     });
 
