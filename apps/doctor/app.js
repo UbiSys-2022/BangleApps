@@ -196,23 +196,31 @@ function renderLabel(obj, value) {
 
 function connect(device) {
   return () => {
+    let characteristic;
+    let gatt;
+
     deviceCurrent = device;
     renderLabel(layout.name, device.name);
 
     console.log("new closest device", device.id);
     device.on("gattserverdisconnected", () => {
-      deviceCurrent = {};
-      console.log(device.name, "disconnected");
+      if (characteristic) {
+        characteristic.stopNotifications();
+      }
+
+      dataHr.reset();
+
       renderLabel(layout.heartrate);
       renderLabel(layout.name);
-      dataHr.reset();
       layout.render(layout.graph);
+
+      console.log("disconnected", device.name);
     });
 
     return device.gatt
       .connect()
-      .then((gatt) => {
-        gattCurrent = gatt;
+      .then((g) => {
+        gatt = g;
         console.log("device name:", device.name);
 
         return gatt.startBonding();
@@ -220,7 +228,7 @@ function connect(device) {
       .then(() => {
         console.log("acquiring service");
 
-        return gattCurrent.getPrimaryService("180d");
+        return gatt.getPrimaryService("180d");
       })
       .then((svc) => {
         console.log("querying service");
@@ -228,6 +236,8 @@ function connect(device) {
         return svc.getCharacteristic("2a37");
       })
       .then((char) => {
+        characteristic = char;
+
         console.log("connect to characteristic");
 
         char.on("characteristicvaluechanged", (e) => {
