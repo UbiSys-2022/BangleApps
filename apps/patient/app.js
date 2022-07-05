@@ -191,7 +191,7 @@ function getAcc() {
   var accy = SPI1.send([0xAB,0], E3)[1];
   if (accx>127) accx-=256; // reset accelerometer value when it reaches margin on x-axis
   if (accy>127) accy-=256; // reset accelerometer value when it reaches margin on y-axis
-  // avarage acceleration calculations
+  // average acceleration calculations
   avrx = 0.1*accx + 0.9*avrx;
   avry = 0.1*accy + 0.9*avry;
   digitalWrite(LED2, avrx > 64); // lighting LED in case of excessive acceleration in positive x-axis direction
@@ -203,7 +203,7 @@ onInit();setInterval(getAcc, 10);
 
 // alert message 
 function allert() {
- var message = "Atypical abrupt movements have been detected";
+  var message = "Atypical abrupt movements have been detected";
   g.clear();
   g.setFont("6x8");
   g.setFontAlign(0,1);
