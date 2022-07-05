@@ -179,3 +179,38 @@ Bangle.on("HRM", function (hrm) {
   drawHRM();
   updateData(hrm.bpm);
 });
+
+// set up accelerometer
+function onInit() {
+  SPI1.send([0x20,0b01000111], E3);
+}
+
+var avrx=0.0, avry=0.0;
+function getAcc() {
+  var accx = SPI1.send([0xA9,0], E3)[1];
+  var accy = SPI1.send([0xAB,0], E3)[1];
+  if (accx>127) accx-=256; // reset accelerometer value when it reaches margin on x-axis
+  if (accy>127) accy-=256; // reset accelerometer value when it reaches margin on y-axis
+  // avarage acceleration calculations
+  avrx = 0.1*accx + 0.9*avrx;
+  avry = 0.1*accy + 0.9*avry;
+  digitalWrite(LED2, avrx > 64); // lighting LED in case of excessive acceleration in positive x-axis direction
+  digitalWrite(LED4, avrx < -64); // lighting LED in case of excessive acceleration in negative x-axis direction 
+  digitalWrite(LED1, avry > 64); // lighting LED in case of excessive acceleration in positive y-axis direction
+  digitalWrite(LED3, avry < -64); // lighting LED in case of excessive acceleration in negative y-axis direction
+}
+onInit();setInterval(getAcc, 10);
+
+// alert message 
+function allert() {
+ var message = "Atypical abrupt movements have been detected";
+  g.clear();
+  g.setFont("6x8");
+  g.setFontAlign(0,1);
+  g.drawString(message, 70, 185, true);
+}
+
+// display allert message when a LED is turned on 
+if (LED1.write(1) || LED2.write(1) || LED3.write(1) || LED4.write(1)) {
+  var allertDisplay = setInterval(allert, 1000);
+}
