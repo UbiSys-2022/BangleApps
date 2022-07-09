@@ -34,6 +34,8 @@ class Data {
   }
 }
 
+let emergencyList = {}
+
 function renderGraph(l) {
   require("graph").drawLine(g, l.data.values, {
     gridx: Math.floor(l.w / l.data.length),
@@ -268,6 +270,31 @@ function disconnect(device) {
   }
 }
 
+function alert(name) {
+  setTimeout(function(){
+    var message = `Patient with device name ${name} might be having an emergency`;
+    g.clear();
+    g.setFont("6x8");
+    g.setFontAlign(0,1);
+    g.drawString(message, 70, 185, true);
+}, 2000);
+  g.clear();
+  layout.render();
+}
+
+function checkEmergency(device){
+  let isEmergency = false;
+  if(device.data[device.length - 1] == 1){
+    if(emergencyList[device.id] == undefined){
+      emergencyList[device.id] = Date.now();
+      isEmergency = true;
+    }
+    else if((Date.now() - emergencyList[device.id]) / 1000 > 3600)
+      emergencyList[device.id] = undefined;
+  }
+  return isEmergency
+}
+
 function scanNearbyDevices() {
   NRF.findDevices(
     (deviceList) => {
@@ -281,6 +308,8 @@ function scanNearbyDevices() {
         if (device.id === deviceCurrent.id) {
           currentRssi = device.rssi;
         }
+        if(checkEmergency(device))
+          alert(device.name);
       }
 
       const isExistent = Boolean(deviceClosest.id);
