@@ -24,6 +24,15 @@ function toggleEmergencyAdvertising(enable){
     advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 1], advData.length);
     emergency = true;
   }
+  else if(!emergency && !enable){
+    advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 0], advData.length);
+  }
+  else if(emergency && enable){
+    advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 1], advData.length);
+  }
+  else{
+    advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 0], advData.length);
+  }
   
   NRF.setAdvertising(advDataExt);
 }
