@@ -215,21 +215,20 @@ Bangle.on("HRM", function (hrm) {
 });
 
 // set up accelerometer
-Bangle.on('accel', function(xyz) {
-  var avrx=0.0, avry=0.0;
-  if (x>127) x-=256; // reset accelerometer value when it reaches margin on x-axis
-  if (y>127) y-=256; // reset accelerometer value when it reaches margin on y-axis
-  // average acceleration calculations
-  avrx = 0.1*x + 0.9*avrx;
-  avry = 0.1*y + 0.9*avry;
-  digitalWrite(LED2, avrx > 64); // lighting LED in case of excessive acceleration in positive x-axis direction
-  digitalWrite(LED4, avrx < -64); // lighting LED in case of excessive acceleration in negative x-axis direction 
-  digitalWrite(LED1, avry > 64); // lighting LED in case of excessive acceleration in positive y-axis direction
-  digitalWrite(LED3, avry < -64); // lighting LED in case of excessive acceleration in negative y-axis direction
+Bangle.on('accel', function(accel) {
+  x=accel.x;
+  y=accel.y;
+  z=accel.z;
+  margin = 2;
+  //alert and send advertise emergency when more than 2 Gs of acceleration is measured in any direction
+  if(x > margin || x < -1*margin || y > margin || y < -1*margin || z > margin || z < -1*margin){
+    alert();
+    toggleEmergencyAdvertising(true);
+  }
 });
 
 // alert message 
-function allert() {
+function alert() {
   var message = "Atypical abrupt movements have been detected";
   g.clear();
   g.setFont("6x8");
@@ -237,8 +236,7 @@ function allert() {
   g.drawString(message, 70, 185, true);
 }
 
-// display allert message when a LED is turned on 
-if (LED1.write(1) || LED2.write(1) || LED3.write(1) || LED4.write(1)) {
-  var allertDisplay = setInterval(allert, 1000);
-  toggleEmergencyAdvertising(true);
-}
+setWatch(function(e) {
+  toggleEmergencyAdvertising(false);
+}, BTN1, { repeat: true, edge: "rising", debounce: 25 });
+
