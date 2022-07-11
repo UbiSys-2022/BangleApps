@@ -229,11 +229,12 @@ Bangle.on('accel', function(accel) {
 
 // alert message 
 function alert() {
-  var message = "Atypical abrupt movements have been detected";
+  var message = "Probable Emergency Detected";
   g.clear();
   g.setFont("6x8");
   g.setFontAlign(0,1);
-  g.drawString(message, 70, 185, true);
+  g.setColor("#FF0000");
+  g.drawString(message, 125, 185, true);
 }
 
 setWatch(function(e) {
