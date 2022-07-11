@@ -282,7 +282,7 @@ function disconnect(device) {
 function alert(name) {
   let message = `${name} emergency`;
   let lcd = !Bangle.isLCDOn();
-  let obj = layout.emergency
+  let obj = layout.emergency;
   obj.label = message;
   obj.col = "#FF0000";
   layout.render(obj);
@@ -291,7 +291,7 @@ function alert(name) {
   if(lcd)
     Bangle.setLCDPower(true);
   setTimeout(function(){
-  let obj = layout.emergency
+  let obj = layout.emergency;
   obj.label = "No Emergencies";
   obj.col = "#00FF00";
   layout.render(obj);
@@ -383,10 +383,14 @@ Bangle.on("lcdPower", (isOn) => {
   }
 });
 
-Bangle.setLCDTimeout(LCD_TIMEOUT);
-g.clear();
-layout.render();
+Bangle.setLCDPower(false);
 
-if (Bangle.isLCDOn()) {
-  startScanning();
-}
+setTimeout(function(){
+  Bangle.setLCDTimeout(LCD_TIMEOUT);
+  g.clear();
+  layout.render();
+  Bangle.setLCDPower(true);
+  if (Bangle.isLCDOn()) {
+    startScanning();
+  }
+}, 5000);
