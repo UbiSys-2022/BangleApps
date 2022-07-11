@@ -34,6 +34,8 @@ class Data {
   }
 }
 
+let emergencyList = {};
+
 function renderGraph(l) {
   require("graph").drawLine(g, l.data.values, {
     gridx: Math.floor(l.w / l.data.length),
@@ -47,7 +49,9 @@ function renderGraph(l) {
 }
 
 const Layout = require("Layout");
-const INTERVAL = 3e3;
+const TIMEOUT_INTERVAL = 3e3;
+const LCD_ON_INTERVAL = 3e3;
+const LCD_OFF_INTERVAL = 30e3;
 const LCD_TIMEOUT = 30;
 const RSSI_MARGIN = 6;
 
@@ -106,7 +110,7 @@ function requestStatsFromCurrent() {
         renderLabel(layout.min, `min ${min}`);
         renderLabel(layout.avg, `avg ${avg}`);
         renderLabel(layout.max, `max ${max}`);
-        setTimeout(resetRequest, INTERVAL);
+        setTimeout(resetRequest, TIMEOUT_INTERVAL);
       })
       .catch(resetRequest);
   }
@@ -155,6 +159,13 @@ const layout = new Layout(
         ],
       },
       {
+        type: "txt",
+        font: "10%",
+        label: "No Emergencies",
+        col: "#00FF00",
+        id: "emergency",
+      },
+      {
         type: "custom",
         render: renderGraph,
         id: "graph",
@@ -163,7 +174,7 @@ const layout = new Layout(
         fillx: 1,
         filly: 1,
         data: dataHr,
-      },
+      }
     ],
   },
   {
@@ -268,6 +279,41 @@ function disconnect(device) {
   }
 }
 
+function alert(name) {
+  let message = `${name} emergency`;
+  let lcd = !Bangle.isLCDOn();
+  let obj = layout.emergency;
+  obj.label = message;
+  obj.col = "#FF0000";
+  layout.render(obj);
+  layout.render();
+  Bangle.buzz(1000);
+  if(lcd)
+    Bangle.setLCDPower(true);
+  setTimeout(function(){
+  let obj = layout.emergency;
+  obj.label = "No Emergencies";
+  obj.col = "#00FF00";
+  layout.render(obj);
+  layout.render();
+  if(lcd)
+    Bangle.setLCDPower(false);
+  }, 5000);
+}
+
+function checkEmergency(device){
+  let isEmergency = false;
+  if(device.data[device.data.length - 1] == 1){
+    if(emergencyList[device.id] == undefined){
+      emergencyList[device.id] = Date.now();
+      isEmergency = true;
+    }
+    else if((Date.now() - emergencyList[device.id]) / 1000 > 3600)
+      emergencyList[device.id] = undefined;
+  }
+  return isEmergency;
+}
+
 function scanNearbyDevices() {
   NRF.findDevices(
     (deviceList) => {
@@ -281,6 +327,8 @@ function scanNearbyDevices() {
         if (device.id === deviceCurrent.id) {
           currentRssi = device.rssi;
         }
+        if(checkEmergency(device))
+          alert(device.name);
       }
 
       const isExistent = Boolean(deviceClosest.id);
@@ -309,9 +357,9 @@ function scanNearbyDevices() {
   );
 }
 
-function startScanning() {
+function startScanning(interval) {
   clearInterval(scanIntervalId);
-  scanIntervalId = setInterval(scanNearbyDevices, INTERVAL);
+  scanIntervalId = setInterval(scanNearbyDevices, interval);
   resetRequest();
   renderLabel(layout.name, "Scanning...");
 
@@ -319,24 +367,30 @@ function startScanning() {
 }
 
 Bangle.on("closestdevicechanged", (device) => {
+  if(Bangle.isLCDOn())
   disconnect(deviceCurrent).then(connect(device));
 });
 
 Bangle.on("lcdPower", (isOn) => {
   if (isOn) {
     layout.render();
-    startScanning();
+    startScanning(LCD_ON_INTERVAL);
   } else {
     disconnect(deviceCurrent);
     clearInterval(scanIntervalId);
     scanIntervalId = -1;
+    startScanning(LCD_OFF_INTERVAL);
   }
 });
 
-Bangle.setLCDTimeout(LCD_TIMEOUT);
-g.clear();
-layout.render();
+Bangle.setLCDPower(false);
 
-if (Bangle.isLCDOn()) {
-  startScanning();
-}
+setTimeout(function(){
+  Bangle.setLCDTimeout(LCD_TIMEOUT);
+  g.clear();
+  layout.render();
+  Bangle.setLCDPower(true);
+  if (Bangle.isLCDOn()) {
+    startScanning();
+  }
+}, 5000);

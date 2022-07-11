@@ -8,6 +8,34 @@ let averageBPM = 0;
 let currentBPM = 0;
 let minimumBPM = 0;
 let maximumBPM = 0;
+let emergency = false;
+
+// toggle emergency advertising
+function toggleEmergencyAdvertising(enable){
+  let advData = NRF.getAdvertisingData({});
+  let advDataExt = new Uint8Array(advData.length + 9);
+  advDataExt.set(advData, 0);
+
+  if(emergency && !enable){
+    advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 0], advData.length);
+    emergency = false;
+  }
+  else if(!emergency && enable){
+    advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 1], advData.length);
+    emergency = true;
+  }
+  else if(!emergency && !enable){
+    advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 0], advData.length);
+  }
+  else if(emergency && enable){
+    advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 1], advData.length);
+  }
+  else{
+    advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 0], advData.length);
+  }
+  
+  NRF.setAdvertising(advDataExt);
+}
 
 // a function to show current time & date
 function drawTimeDate() {
@@ -68,10 +96,16 @@ function drawHRM() {
   // console.log(heartRate);
   /* Tachycardia
   Heart rate excees normal resting rate */
-  if (heartRate > 120) g.drawString("Pulse too high!", 120, 200, true);
+  if (heartRate > 120){
+    g.drawString("Pulse too high!", 120, 200, true);
+    toggleEmergencyAdvertising(true);
+  } 
   /* Bradycardia
   Slow, resting heart rate and commonly normal during sleep, or for resting athletes. More tricky do detect, because if loop checks for pulse under 60, every sleeping person might trigger an alarm. For testing check for values lower than 40. */
-  if (heartRate < 40) g.drawString("Pulse too low!", 120, 200, true);
+  if (heartRate < 40){
+    g.drawString("Pulse too low!", 120, 200, true);
+    toggleEmergencyAdvertising(true);
+  }
 }
 
 function fileWrite(bpm) {
@@ -113,10 +147,10 @@ function initServices() {
     { scannable: true, discoverable: true, connectable: true }
   );
   let advData = NRF.getAdvertisingData({});
-  let advDataExt = new Uint8Array(advData.length + 4);
+  let advDataExt = new Uint8Array(advData.length + 9);
 
   advDataExt.set(advData, 0);
-  advDataExt.set([3, 0x03, 0x0d, 0x18], advData.length);
+  advDataExt.set([3, 0x03, 0x0d, 0x18, 4, 0x16, 0x0d, 0x18, 0], advData.length);
   NRF.setAdvertising(advDataExt);
 }
 
@@ -181,29 +215,29 @@ Bangle.on("HRM", function (hrm) {
 });
 
 // set up accelerometer
-Bangle.on('accel', function(xyz) {
-  var avrx=0.0, avry=0.0;
-  if (x>127) x-=256; // reset accelerometer value when it reaches margin on x-axis
-  if (y>127) y-=256; // reset accelerometer value when it reaches margin on y-axis
-  // average acceleration calculations
-  avrx = 0.1*x + 0.9*avrx;
-  avry = 0.1*y + 0.9*avry;
-  digitalWrite(LED2, avrx > 64); // lighting LED in case of excessive acceleration in positive x-axis direction
-  digitalWrite(LED4, avrx < -64); // lighting LED in case of excessive acceleration in negative x-axis direction 
-  digitalWrite(LED1, avry > 64); // lighting LED in case of excessive acceleration in positive y-axis direction
-  digitalWrite(LED3, avry < -64); // lighting LED in case of excessive acceleration in negative y-axis direction
+Bangle.on('accel', function(accel) {
+  x=accel.x;
+  y=accel.y;
+  z=accel.z;
+  margin = 2;
+  //alert and send advertise emergency when more than 2 Gs of acceleration is measured in any direction
+  if(x > margin || x < -1*margin || y > margin || y < -1*margin || z > margin || z < -1*margin){
+    alert();
+    toggleEmergencyAdvertising(true);
+  }
 });
 
 // alert message 
-function allert() {
-  var message = "Atypical abrupt movements have been detected";
+function alert() {
+  var message = "Probable Emergency Detected";
   g.clear();
   g.setFont("6x8");
   g.setFontAlign(0,1);
-  g.drawString(message, 70, 185, true);
+  g.setColor("#FF0000");
+  g.drawString(message, 125, 185, true);
 }
 
-// display allert message when a LED is turned on 
-if (LED1.write(1) || LED2.write(1) || LED3.write(1) || LED4.write(1)) {
-  var allertDisplay = setInterval(allert, 1000);
-}
+setWatch(function(e) {
+  toggleEmergencyAdvertising(false);
+}, BTN1, { repeat: true, edge: "rising", debounce: 25 });
+
